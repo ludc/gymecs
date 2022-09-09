@@ -4,7 +4,7 @@ class Game:
     def reset(self,seed,**arguments)->WorldAPI:
         raise NotImplementedError
 
-    def step(self,_game_dt,**arguments):
+    def step(self,**arguments):
         raise NotImplementedError
 
     def is_done(self):
@@ -38,7 +38,7 @@ class AutoResetGame(Game):
         self.worldapi=AutoResetGameAPI(wapi)
         return self.worldapi
 
-    def step(self,_game_dt,**arguments):
+    def step(self,**arguments):
         if self.to_reset:
             self.seed+=1
             wapi=self.game.reset(seed=self.seed,**arguments)
@@ -46,7 +46,7 @@ class AutoResetGame(Game):
             self.to_reset=False
             return
 
-        self.game.step(_game_dt=_game_dt,**arguments)
+        self.game.step(**arguments)
         if self.game.is_done():
             self.to_reset=True
 

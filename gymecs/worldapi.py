@@ -43,7 +43,8 @@ class WorldUpdate_DelEntity(WorldUpdate):
 
 class WorldUpdates(WorldUpdate):
     def __init__(self,*updates):
-        for u in updates: assert isinstance(u,WorldUpdate)
+        for u in updates: 
+            assert isinstance(u,WorldUpdate)
         self._updates=updates
 
     def __iter__(self):
@@ -67,19 +68,20 @@ class WorldAPI:
     def query(self,query:WorldQuery):
         raise NotImplementedError
 
-    def get_entity(self,*name):
+    def get_entity(self,name):
         query=WorldQuery_GetEntity(name)
         return self.query(query)
 
     def get_entities(self,*names):
-        query=WorldQueries([WorldQuery_GetEntity(n) for n in names])
+        query=WorldQueries(*[WorldQuery_GetEntity(n) for n in names])
         return self.query(query)
 
     def update(self,update:WorldUpdate):
         raise NotImplementedError
     
     def flush(self):
-        update=WorldUpdates(self._cached_updates)
+        update=WorldUpdates(*self._cached_updates)
+        self.update(update)
         self._cached_updates=[]
 
     def execute(self,system,**arguments):

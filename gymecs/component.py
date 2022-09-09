@@ -7,18 +7,23 @@ class Component:
         fields=dir_fields(self)
         for f in values:
             assert f in fields
-            print(f)
             setattr(self,f,values[f])            
     
     def __str__(self):
         results=[f+"="+str(getattr(self,f)) for f in self.keys()]
         return str(type(self)) + " = " + ";".join(results)
 
-    def structureclone(self,**args):
-        c=self.__class__(id=self.id(),**{k:getattr(self,k) for k in self.keys()})
+    def _structureclone(self,**args):
+        c=self.__class__(**{k:getattr(self,k) for k in dir_fields(self)})
         for k,v in args.items():
-            c.values[k]=v
+            setattr(c,k,v)
         return c
 
-    def deepclone(self):
+    def _deepclone(self):
         return copy.deepcopy(self)
+
+    def __str__(self):
+        results=[]
+        for f in dir_fields(self):
+            results.append(f+"="+str(getattr(self,f)))
+        return " ; ".join(results)

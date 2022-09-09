@@ -1,4 +1,4 @@
-from gymecs import dir_fields
+from gymecs import dir_fields,classname_from_object
 from gymecs.system import LocalSystem
 
 class World:
@@ -13,7 +13,7 @@ class World:
     
     def set_component(self,name,name_component,component):
         entity=self._entities[name]
-        setattr(name_component,entity,component)
+        setattr(entity,name_component,component)
 
     def get_entity(self,name):
         return self._entities[name]
@@ -26,7 +26,7 @@ class World:
         for name in self._entities:
             entity=self._entities[name]
             for f in dir_fields(entity):
-                _type=type(getattr(f,entity))
-                print(name+"."+f+" : "+str(_type))
+                _type=classname_from_object(getattr(entity,f))
+                print(name+"."+f+" : ("+str(_type)+") "+str(getattr(entity,f)))
         
     

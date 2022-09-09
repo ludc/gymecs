@@ -24,11 +24,12 @@ class E_Goal(Entity):
 
 class E_Maze(Entity):
     map:MazeMap=MazeMap()
-    size:Size()
+    size:Size=Size()
 
 class GameState(Component):
     done:bool=False
     timestep:int=0
+    interrupted:bool=False
 
 class E_GameState(Entity):
     state:GameState=GameState()
