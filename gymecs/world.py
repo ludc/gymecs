@@ -22,6 +22,15 @@ class World:
         assert isinstance(local_system,LocalSystem)
         local_system(self,**arguments)
 
+    def keys(self):
+        for name in self._entities:
+            yield name
+
+    def items(self):
+        for name,entity in self._entities.items():
+            yield name,entity
+
+
     def _debug_ls(self):
         for name in self._entities:
             entity=self._entities[name]

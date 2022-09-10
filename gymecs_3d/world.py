@@ -17,6 +17,9 @@ class World3D(World):
         assert key in self.node_paths
         return self._nodepaths[key]
 
+    def is_np(self,key):
+        return key in self._nodepaths
+
     def nps(self):
         return list(self._nodepaths.keys())
 
