@@ -65,6 +65,10 @@ class WorldAPI:
     def set_component(self,name,name_component,component):
         self._cached_updates.append(WorldUpdate_SetComponent(name,name_component,component))
 
+    def get_component(self,name,name_component):
+        query=WorldQuery_GetComponent(name,name_component)
+        return self.query(query)
+
     def query(self,query:WorldQuery):
         raise NotImplementedError
 

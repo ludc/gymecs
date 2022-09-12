@@ -7,5 +7,5 @@ class Asset:
     def build_bullet_np(self):
         raise NotImplementedError
 
-    def build_entity(self):
+    def build_entity(self,**args):
         raise NotImplementedError

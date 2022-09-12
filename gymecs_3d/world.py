@@ -7,14 +7,24 @@ class World3D(World):
         super().__init__()
         self._nodepaths={"__root__":NodePath("__root__")}
         self._bullet_world= BulletWorld()
+        self._bullet_world.setGravity(0.0,0.0,-9.81)
         self._debug=debug
         self._bullet_constraints={}
+
+        if debug:
+            self.debugNP = self._nodepaths["__root__"].attachNewNode(BulletDebugNode("Debug"))
+            self.debugNP.show()
+            self.debugNP.node().showWireframe(True)
+            self.debugNP.node().showConstraints(True)
+            self.debugNP.node().showBoundingBoxes(False)
+            self.debugNP.node().showNormals(True)
+            self._bullet_world.setDebugNode(self.debugNP.node())        
             
     def get_bullet_world(self):
         return self._bullet_world
 
     def get_np(self,key="__root__"):
-        assert key in self.node_paths
+        assert key in self._nodepaths
         return self._nodepaths[key]
 
     def is_np(self,key):
@@ -38,6 +48,9 @@ class World3D(World):
             self._bullet_world.remove(self._bullet_constraints[k])
             del(self._bullet_constraints[k])
 
+    def is_constraint(self,k):
+        return k in self._bullet_constraints
+
     def get_constraint(self,k:str)->"BulletConstraint":
         return self._bullet_constraints[k]
 
@@ -50,8 +63,8 @@ class World3D(World):
         return self._bullet_constraints.keys()
 
     def __del__(self): 
-        for k in self.node_paths:    
-            self.node_paths[k].removeNode()
+        for k in self._nodepaths:    
+            self._nodepaths[k].removeNode()
         for k in self.constraints():
             self.remove_constraint(k)
            

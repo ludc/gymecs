@@ -10,19 +10,34 @@ class Game:
     def is_done(self):
         raise NotImplementedError
 
-    def render(self,**arguments):
-        raise NotImplementedError
+    def world(self):
+        return self._world
 
 class AutoResetGameAPI(WorldAPI):
     def __init__(self,worldapi):
         self._worldapi=worldapi
     
+    def set_entity(self,name,entity):
+        self._worldapi.set_entity(name,entity)
+    
+    def del_entity(self,name):
+        self._worldapi.del_entity(name)
+    
+    def set_component(self,name,name_component,component):
+        self._worldapi.set_component(name,name_component,component)
+
+    def get_component(self,name,name_component):
+        return self._worldapi.get_component(name,name_component)
+
     def query(self,query):
         return self._worldapi.query(query)
-
+    
     def update(self,update):
         self._worldapi.update(update)
-
+    
+    def flush(self):
+        self._worldapi.flush()
+    
     def _change_api(self,worldapi):
         assert isinstance(worldapi,WorldAPI)
         self._worldapi=worldapi
@@ -53,5 +68,5 @@ class AutoResetGame(Game):
     def is_done(self):
         return False
 
-    def render(self,**arguments):
-        self.game.render(**arguments)
+    def world(self):
+        return self.game.world()

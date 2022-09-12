@@ -1,6 +1,6 @@
+from gymecs.game import AutoResetGame
 import hydra
 import sys
-
 import numpy as np
 from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.ShowBase import ShowBase
@@ -9,6 +9,7 @@ from panda3d.bullet import BulletDebugNode, BulletWorld
 from panda3d.core import (AmbientLight, BitMask32, ClockObject,
                           DirectionalLight, Vec3, Vec4, Quat,PointLight)
 from panda3d.core import loadPrcFileData
+from gymecs import instantiate_class
 
 loadPrcFileData('','win-size 1024 768')
 
@@ -16,27 +17,17 @@ class PandaShowBase(ShowBase):
     def __init__(
         self,
         game,
-        player,
-        use_multigame,
-        player_args,
-        keyboard_to_event,
         _game_dt,
         _game_n_steps,
-        view_all_steps,
-        first_person
+        view_all_steps,        
     ):
         super().__init__()
-        self.first_person=first_person
-        self.use_multigame=use_multigame
-        self.game = game
-        self.player = player
-        self.keyboard_to_event = keyboard_to_event
+        self._game = game
         self._game_dt = _game_dt
         self._game_n_steps = _game_n_steps
         self.view_all_steps = view_all_steps
         self.timestep = 0
-        self.player_args = player_args
-
+        
         base.setBackgroundColor(0.1, 0.1, 0.1, 1)
         base.setFrameRateMeter(True)
 
@@ -67,11 +58,15 @@ class PandaShowBase(ShowBase):
         # render.setLight(directionalLightNP)
         
         self.accept("escape", self.doExit)
-
-        for key, event in keyboard_to_event.items():
-            print(event, key)
-            inputState.watchWithModifiers(event, key)
-
+        inputState.watchWithModifiers('_key_a','a')
+        inputState.watchWithModifiers('_key_q','q')
+        inputState.watchWithModifiers('_key_w','w')
+        inputState.watchWithModifiers('_key_e','e')
+        inputState.watchWithModifiers('_key_s','s')
+        inputState.watchWithModifiers('_key_d','d')
+        inputState.watchWithModifiers('_key_z','z')
+        inputState.watchWithModifiers('_key_x','x')
+        inputState.watchWithModifiers('_key_c','c')
         # Task
         taskMgr.add(self.update, "updateWorld")
         self.inputState = inputState
@@ -87,11 +82,7 @@ class PandaShowBase(ShowBase):
         sys.exit(1)
 
     def update(self, task):
-        gnp=None
-        if self.use_multigame:
-            gnp=self._game.games[0].game.world.get_manager("scene_graph").get_np()
-        else:
-            gnp=self._game.world.get_manager("scene_graph").get_np()
+        gnp=self._game.world().get_np()
         if self._node_path!=gnp:
             if not self._node_path is None: self._node_path.removeNode()
             self._node_path=gnp
@@ -99,32 +90,33 @@ class PandaShowBase(ShowBase):
 
         dt = globalClock.getDt()
         if self.view_all_steps:
-            self.game.step(_game_dt=self._game_dt, _game_n_steps=1)
-
-            self.player(self.worldapi, **self.player_args)         
+            self._game.step(_game_dt=self._game_dt, _game_n_steps=1)
+            #self.player(self.worldapi, **self.player_args)
         else:
-            self.game.step(_game_dt=self._game_dt, _game_n_steps=self._game_n_steps)
-            self.player(self.worldapi, **self.player_args)
-        component=self.worldapi.query_set("agent")["agent"]
+            self._game.step(_game_dt=self._game_dt, _game_n_steps=self._game_n_steps)
+            #self.player(self.worldapi, **self.player_args)
+        if self._game.is_done():
+            exit()
+        # component=self.worldapi.query_set("agent")["agent"]
         
-        if self.first_person:
-            cpos=component["position"]
-            cpos=Vec3(*cpos)
-            cangle=component["angle"]
-            axis = Vec3(0.0, 0.0, -1.0)
-            axis.normalize()
-            quat = Quat()
-            quat.setFromAxisAngle(cangle, axis)
-            vec = Vec3(0.0, -5.0, 0.0)
-            rotated_vec = quat.xform(vec)
-            vec = Vec3(0.0, -1.0, 0.0)
-            rotated_vec = quat.xform(vec)
-            cam_pos=cpos-rotated_vec
-            cam_pos[2]+=1.0
-            base.cam.setPos(cam_pos)
-            vec = Vec3(0.0, -15.0, 0.0)
-            rotated_vec = quat.xform(vec)
-            base.cam.lookAt(*(cpos+rotated_vec))
+        # if self.first_person:
+        #     cpos=component["position"]
+        #     cpos=Vec3(*cpos)
+        #     cangle=component["angle"]
+        #     axis = Vec3(0.0, 0.0, -1.0)
+        #     axis.normalize()
+        #     quat = Quat()
+        #     quat.setFromAxisAngle(cangle, axis)
+        #     vec = Vec3(0.0, -5.0, 0.0)
+        #     rotated_vec = quat.xform(vec)
+        #     vec = Vec3(0.0, -1.0, 0.0)
+        #     rotated_vec = quat.xform(vec)
+        #     cam_pos=cpos-rotated_vec
+        #     cam_pos[2]+=1.0
+        #     base.cam.setPos(cam_pos)
+        #     vec = Vec3(0.0, -15.0, 0.0)
+        #     rotated_vec = quat.xform(vec)
+        #     base.cam.lookAt(*(cpos+rotated_vec))
 
         self.timestep += 1
         return task.cont
@@ -132,32 +124,20 @@ class PandaShowBase(ShowBase):
     def cleanup(self):
         pass
 
-    def setup(self):
-        self._game=self.game
-        if not self.use_multigame:
-            self.game=AutoResetGame(self.game)
-        
-        self.worldapi=self.game.reset(seed=0)
-        self.player.reset(seed=0)
-        self.player(self.worldapi,**self.player_args)
-        self._node_path=None
-        
+    def setup(self):        
+        self.worldapi=self._game.reset(seed=np.random.randint(9999999))
+        # self.player.reset(seed=0)
+        # self.player(self.worldapi,**self.player_args)
+        self._node_path=None        
 
-class NavViewer:
-    def __init__(self,first_person,use_multigame=False):
-        self.use_multigame=use_multigame
-        self.fp=first_person
+class Viewer:
+    def __init__(self,game,player,cfg):
+        self._game=game        
+        self._cfg=cfg
 
-    def play(self, game, player, player_args, _game_dt, _game_n_steps, view_all_steps):
-        key_map = {
-            "z": "forward",
-            "s": "reverse",
-            "q": "turnLeft",
-            "d": "turnRight",
-            "x": "jump",
-        }
+    def play(self):
         viewer = PandaShowBase(
-            game, player, self.use_multigame, player_args, key_map, _game_dt, _game_n_steps, view_all_steps,self.fp
+            self._game, self._cfg.game_dt, self._cfg.game_n_steps, self._cfg.view_all_steps
         )
         viewer.setup()
         viewer.run()
@@ -167,13 +147,13 @@ def main(cfg):
     game = instantiate_class(cfg.game)
 
     player = instantiate_class(cfg.player)
-    player_args = {}
-    if "player_args" in cfg:
-        player_args = cfg.player_args
-    viewer = instantiate_class(cfg.viewer)
-    viewer.play(
-        game, player, player_args, cfg._game_dt, cfg._game_n_steps, cfg._view_all_steps
-    )
+    game.register_system(player,idx=0)
+    # player_args = {}
+    # if "player_args" in cfg:
+    #     player_args = cfg.player_args
+    game=AutoResetGame(game)
+    viewer = Viewer(game, player,cfg.viewer)
+    viewer.play()
 
 
 if __name__ == "__main__":

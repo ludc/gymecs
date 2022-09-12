@@ -6,7 +6,7 @@ class Component:
     def __init__(self, **values):
         fields=dir_fields(self)
         for f in values:
-            assert f in fields
+            assert f in fields,str(f)+" // "+str(fields)
             setattr(self,f,values[f])            
     
     def __str__(self):

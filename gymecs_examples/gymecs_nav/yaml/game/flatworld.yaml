@@ -1,0 +1,35 @@
+classname: gymecs_examples.gymecs_nav.game.NavGame
+
+cfg:
+  debug: True
+
+  agent:  
+    classname: gymecs_3d.agents.basic.BasicCubeAsset 
+    properties:   
+      mass: 10
+      scale: 0.6
+      friction: 0.6
+      restitution: 0.0
+      color: (1.0,0.0,0.0,1.0)
+      front_color: (0.0,0.0,1.0,1.0)
+    configuration:
+      forward_force: 100
+      rotation_speed: 90
+      jump_force: 100
+      min_seconds_between_jumps: 1.0
+
+  goal:
+    classname: gymecs_examples.gymecs_nav.components.GoalAsset
+    radius: 2.0
+    color: [0.0,1.0,0.0,1.0]
+    obj_directory: /home/denoyer/workspace/gymecs/gymecs_3d/obj
+
+  map:
+    classname: gymecs_3d.maps.flat_map.FlatMap
+    size: 10.0
+    friction: 1.0
+    restitution: 0.0
+    color: (0.6,0.6,0.6,1.0)
+
+  max_episode_steps: 400
+

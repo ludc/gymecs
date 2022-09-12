@@ -15,8 +15,16 @@ class World:
         entity=self._entities[name]
         setattr(entity,name_component,component)
 
+    def get_component(self,name,name_component):
+        return getattr(self.get_entity(name),name_component)
+
     def get_entity(self,name):
         return self._entities[name]
+
+    def entities_by_class(self,_class):
+        for name,entity in self._entities.items():
+            if isinstance(entity,_class):
+                yield name,entity
 
     def execute(self,local_system,**arguments):
         assert isinstance(local_system,LocalSystem)
@@ -30,6 +38,8 @@ class World:
         for name,entity in self._entities.items():
             yield name,entity
 
+    def __contains__(self,key):
+        return key in self._entities
 
     def _debug_ls(self):
         for name in self._entities:

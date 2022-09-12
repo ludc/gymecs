@@ -64,4 +64,5 @@ from .entity import Entity
 from .world import World
 from .worldapi import WorldAPI,LocalWorldAPI
 from .system import System,LocalSystem
-from .game import Game
+from .game import Game,AutoResetGame
+from .gyma import GymEnv

@@ -1,4 +1,4 @@
-from gymecs_3d.map import Map
+from gymecs_3d.maps import Map
 from panda3d.core import NodePath,BitMask32,Vec3
 from drain_3d.obj.tools import make_rectangle
 from panda3d.bullet import BulletRigidBodyNode,BulletBoxShape

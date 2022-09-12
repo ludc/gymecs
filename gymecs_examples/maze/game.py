@@ -9,7 +9,7 @@ import gymecs.seeding
 class SingleMazeGame(Game):
     def __init__(self,size=(21,21),max_episode_steps=100):
         super().__init__()
-        self._world=World()
+        
         self._size=size
         self._max_episode_steps=max_episode_steps
         self._systems=[]
@@ -23,6 +23,7 @@ class SingleMazeGame(Game):
         self._systems.append(system)
 
     def reset(self,seed):
+        self._world=World()
         self._np_random,_=gymecs.seeding.np_random(seed)
 
         sx,sy=self._size
