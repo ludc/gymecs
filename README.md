@@ -6,6 +6,10 @@ The ECS is associated with a blog that explains step by step how to create such 
 
 Each branch of the repository is associated with a particular blog post, and then `main` branch correspond to the most recent post.
 
+## Installation
+
+Just `pip install -e .` would work, on Linux, Windows and MacOS.
+
 ## Citation
 
 If you are using the ECS, please refer to this website or use the following citation:
@@ -19,5 +23,9 @@ If you are using the ECS, please refer to this website or use the following cita
     }
 
 ```
+
+## Stages
+
+* [Post 1](https://ludc.github.io/video_games_and_deep_reinforcement_learning/2022/10/14/a-first-Entity-Component-System-to-replace-Gym.html): A simple ECS to replace gym : [Branch](https://github.com/ludc/gymecs/tree/post1)
 
 
