@@ -1,1 +1,0 @@
-_objloader__loaded={}
