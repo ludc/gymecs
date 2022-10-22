@@ -1,16 +1,55 @@
 import copy
 
+def dir_fields(c):
+    return [m for m in dir(c) if not m.startswith("_")]
+
+
 class Component:
     def __init__(self, **values):
+        fields = dir_fields(self)
         for f in values:
-            assert hasattr(self,f)
+            assert f in fields, str(f) + " // " + str(fields)
             setattr(self, f, values[f])
 
+    def _structureclone(self, **args):
+        c = self.__class__(**{k: getattr(self, k) for k in dir_fields(self)})
+        for k, v in args.items():
+            setattr(c, k, v)
+        return c
+
+    def _deepclone(self,**args):
+        results = {k: copy.deepcopy(getattr(self, k)) for k in dir_fields(self) if not k in args}        
+        for k in args:
+            results[k] = args[k]
+        return self.__class__(**results)
+        
 class Entity:
-    def __init__(self,**components):
-        for name,c in components.items():
-            assert hasattr(self,name)
-            setattr(self,name,c)
+    def __init__(self, **components):
+        fields = dir_fields(self)
+        for name, c in components.items():
+            assert name in fields, (
+                str(type(self))
+                + " => "
+                + name
+                + " vs "
+                + str(fields)
+                + " for "
+                + str(type(self))
+            )
+            setattr(self, name, c)
+
+    def _structureclone(self, **args):
+        results = {k: getattr(self, k) for k in dir_fields(self) if not k in args}
+        for k in args:
+            results[k] = args[k]
+        return self.__class__(**results)
+
+    def _deepclone(self, **args):
+        results = {k: copy.deepcopy(getattr(self, k)) for k in dir_fields(self) if not k in args}        
+        for k in args:
+            results[k] = args[k]
+        return self.__class__(**results)
+
        
 class World:
     def __init__(self):
@@ -108,6 +147,29 @@ class World:
             bool: True if the entity exists
         """        
         return key in self._entities
+
+    def get_components_by_type(self,type):
+        """ Returns an iterator over ((entity name,entity),(component name,component)) such that the component is of type 'type'
+
+        Args:
+            type (python class): the type of the component to find        
+        """        
+        results=[]
+        for entity_name,entity in self._entities.items():
+            for component_name in dir_fields(entity):
+                component=getattr(entity,component_name)
+                if isinstance(component,type):
+                    yield ((entity_name,entity),(component_name,component))
+
+    def get_entities_by_type(self,type):
+        """ returns an iterator (entity_name,entity) over entities of a given type
+
+        Args:
+            type (python class): the type to match
+
+        """        
+        for ne,e in self._entities.items():
+            if isinstance(e,type): yield ne,e
 
 class System:
     def __call__(self, world, **arguments):
